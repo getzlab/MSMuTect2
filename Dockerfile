@@ -1,9 +1,8 @@
-FROM gcr.io/broad-getzlab-workflows/base_image:latest
+FROM gcr.io/broad-getzlab-workflows/base_image:v0.0.4
 
 WORKDIR build
-# build steps go here
-# remember to clear the build directory!
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
 
 WORKDIR /app
-ENV PATH=$PATH:/app
-COPY <your script> .
+COPY bin/ .

@@ -1,6 +1,14 @@
 #!/bin/bash
-PATH=/Local/bfe_maruvka/anaconda3/bin/:$PATH
 
+# define bams
+TBAM="~/git_repos/MSMuTect2/104R16869.bam"
+TBAI="~/git_repos/MSMuTect2/104R16869.bai"
+
+NBAM="~/git_repos/MSMuTect2/104R16905.bam"
+NBAI="~/git_repos/MSMuTect2/104R16905.bai"
+
+
+PAIRID="test"
 
 ######
 # Input
