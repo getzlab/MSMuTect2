@@ -13,7 +13,7 @@ python /app/get_all.py  ${output_prefix}.${sample_type}.hist.mot /app/src/P_A.cs
             """
         ],
         docker = "gcr.io/broad-getzlab-workflows/msmutect2_wolf:v2",
-        resources={"mem": '8G', 'cpus-per-task': '4'}
+        resources={"mem": '32G', 'cpus-per-task': '4'} # it requires a LOT of memory!!
     )
 
 def postprecess_msindel(tumor_hist, normal_hist, output_prefix, loci_file):
@@ -37,11 +37,11 @@ awk 'BEGIN{FS="\t"}{n=n+1;if(n==1){print $0};if($2==1){print $0}}' ${output_pref
         ],
         outputs={
             "MS_indels_file" : "*.mut.cln",
-            "maf_life": "*.mut.maf_like",
-            "maf_like_dec" : "*.mut.maf_like.dec" 
+            "maf_like": "*.mut.maf_like",
+            "maf_like_decision" : "*.mut.maf_like.dec" 
         },
         docker = "gcr.io/broad-getzlab-workflows/msmutect2_wolf:v2",
-        resources={"mem": '8G'}
+        resources={"mem": '16G'}
     )
 
 
@@ -82,7 +82,7 @@ def msmutect_workflow(
     )
 
 if __name__ == "__main__":
-    with wolf.Workflow(workflow = msmutect_workflow) as e:
+    with wolf.Workflow(workflow = msmutect_workflow, conf = { "clust_frac": 1 }, ) as e:
         e.run(
             tumor_bam = "/mnt/nfs/wgs_ref/hg38_bam/1205d516-e6e7-49b4-9681-8b706a7b211d_wgs_gdc_realn.bam", 
             tumor_bai = "/mnt/nfs/wgs_ref/hg38_bam/1205d516-e6e7-49b4-9681-8b706a7b211d_wgs_gdc_realn.bai",
@@ -90,4 +90,5 @@ if __name__ == "__main__":
             normal_bai = "/mnt/nfs/wgs_ref/hg38_bam/d5011161-3d6b-4802-8a64-614f6d2298f9_wgs_gdc_realn.bai", 
             pair_name = "testrun",
             loci_file = "/mnt/nfs/wgs_ref/hg38_1_to_15_loci.phobos",
+            run_name="test_one_pair"
             )
