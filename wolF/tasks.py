@@ -74,7 +74,7 @@ def msmutect_workflow(
     )
 
     # merge
-    postprecess_msindel(
+    return postprecess_msindel(
         tumor_hist=msT["hist"],
         normal_hist=msN["hist"],
         output_prefix = pair_name,
