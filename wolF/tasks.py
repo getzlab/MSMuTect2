@@ -9,7 +9,7 @@ def msmutect_sample(bam, bai, loci, sample_type, output_prefix,):
             """
 python3 /app/msmutect.py -I ${bam} -l ${loci} -O ${output_prefix}.${sample_type}.hist
 bash /app/hist2py.sh ${output_prefix}.${sample_type}.hist
-python /app/get_all.py  ${output_prefix}.${sample_type}.hist.mot /app/src/P_A.csv > ${output_prefix}.${sample_type}.hist.mot.all
+python /app/get_all.py  ${output_prefix}.${sample_type}.hist.mot /app/P_A.csv > ${output_prefix}.${sample_type}.hist.mot.all
             """
         ],
         docker = "gcr.io/broad-getzlab-workflows/msmutect2_wolf:v2",
