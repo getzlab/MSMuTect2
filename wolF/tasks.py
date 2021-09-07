@@ -13,7 +13,7 @@ python /app/get_all.py  ${output_prefix}.${sample_type}.hist.mot /app/P_A.csv > 
             """
         ],
         docker = "gcr.io/broad-getzlab-workflows/msmutect2_wolf:v2",
-        resources={"mem": '32G', 'cpus-per-task': '4'} # it requires a LOT of memory!!
+        resources={"mem": '45G', 'cpus-per-task': '2'} # it requires a LOT of memory!!
     )
 
 def postprecess_msindel(tumor_hist, normal_hist, output_prefix, loci_file):
@@ -23,14 +23,16 @@ def postprecess_msindel(tumor_hist, normal_hist, output_prefix, loci_file):
         script=[
             r"""
 #Taking the shared loci
-bash /app/Shared_loci_v3.sh ${tumor_hist}  ${normal_hist} A
+ln -s ${tumor_hist} ./${output_prefix}.tumor.hist.mot.all
+ln -s ${normal_hist} ./${output_prefix}.normal.hist.mot.all
+bash /app/Shared_loci_v3.sh ./${output_prefix}.tumor.hist.mot.all  ./${output_prefix}.normal.hist.mot.all A
 
 #Calling mutations
-python3 /app/Find_mutations2.py  ${output_prefix}.Tumor.hist.mot.all.tmp.par.reg  ${output_prefix}.Normal.hist.mot.all.tmp.par.reg /app/P_A.csv 8 0.3 0.031  > ${output_prefix}.mut
+python3 /app/Find_mutations2.py  ${output_prefix}.tumor.hist.mot.all.tmp.par.reg  ${output_prefix}.normal.hist.mot.all.tmp.par.reg /app/P_A.csv 8 0.3 0.031  > ${output_prefix}.mut
 
 #Simple output format 
 tr '\n' ' ' < ${output_prefix}.mut | awk '{gsub("@","\n");print $0}' > ${output_prefix}.mut.cln
-awk 'BEGIN{print ("Locus\tDecision\tNornal_histogram\tNormal_alleles\tNormal_frequencies\tTumor_histogram\tTumor_alleles\tTumor_frequencies\tmotif\tmotif_size\tref_length\tNorm_num_alleles\tTum_num_alleles\tNorm_allele1\tNorm_allele2\tTum_allele1\tTum_allele2\tTum_allele3\tTum_allele4")}{gsub("]","");gsub("@","") split($0,a,"[");split($2,b,":");split(b[4],c,"");split(a[3],d," ");split(a[6],e," ");printf $2"\t"$1"\t"a[2]"\t"a[3]"\t"a[4]"\t"a[5]"\t"a[6]"\t"a[7]"\t"b[4]"\t"length(c)"\t"b[5]"\t"length(d)"\t"length(e)"\t"; if(length(d)==1){printf d[1]"\t-9\t"}else {printf d[1]"\t"d[2]"\t"}; if(length(e)==1){printf e[1]"\t-9\t-9\t-9"}if(length(e)==2){printf e[1]"\t"e[2]"\t-9\t-9"} if(length(e)==3){printf e[1]"\t"e[2]"\t"e[3]"\t-9"} if(length(e)==4){printf e[1]"\t"e[2]"\t"e[3]"\t"e[4]} ;printf "\n"}' $1.mut.cln | grep -v All | awk 'BEGIN{FS="\t"}{if (NF==19){print $0}}' > ${output_prefix}.mut.maf_like
+awk 'BEGIN{print ("Locus\tDecision\tNornal_histogram\tNormal_alleles\tNormal_frequencies\tTumor_histogram\tTumor_alleles\tTumor_frequencies\tmotif\tmotif_size\tref_length\tNorm_num_alleles\tTum_num_alleles\tNorm_allele1\tNorm_allele2\tTum_allele1\tTum_allele2\tTum_allele3\tTum_allele4")}{gsub("]","");gsub("@","") split($0,a,"[");split($2,b,":");split(b[4],c,"");split(a[3],d," ");split(a[6],e," ");printf $2"\t"$1"\t"a[2]"\t"a[3]"\t"a[4]"\t"a[5]"\t"a[6]"\t"a[7]"\t"b[4]"\t"length(c)"\t"b[5]"\t"length(d)"\t"length(e)"\t"; if(length(d)==1){printf d[1]"\t-9\t"}else {printf d[1]"\t"d[2]"\t"}; if(length(e)==1){printf e[1]"\t-9\t-9\t-9"}if(length(e)==2){printf e[1]"\t"e[2]"\t-9\t-9"} if(length(e)==3){printf e[1]"\t"e[2]"\t"e[3]"\t-9"} if(length(e)==4){printf e[1]"\t"e[2]"\t"e[3]"\t"e[4]} ;printf "\n"}' ${output_prefix}.mut.cln | grep -v All | awk 'BEGIN{FS="\t"}{if (NF==19){print $0}}' > ${output_prefix}.mut.maf_like
 bash /app/add_altered_base.sh ${output_prefix}.mut.maf_like ${loci_file}
 awk 'BEGIN{FS="\t"}{n=n+1;if(n==1){print $0};if($2==1){print $0}}' ${output_prefix}.mut.maf_like > ${output_prefix}.mut.maf_like.dec 
             """
@@ -40,8 +42,8 @@ awk 'BEGIN{FS="\t"}{n=n+1;if(n==1){print $0};if($2==1){print $0}}' ${output_pref
             "maf_like": "*.mut.maf_like",
             "maf_like_decision" : "*.mut.maf_like.dec" 
         },
-        docker = "gcr.io/broad-getzlab-workflows/msmutect2_wolf:v2",
-        resources={"mem": '16G'}
+        docker = "gcr.io/broad-getzlab-workflows/msmutect2_wolf:v6",
+        resources={"mem": '32G'}
     )
 
 
